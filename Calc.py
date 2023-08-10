@@ -1,60 +1,65 @@
 from tkinter import *
 
 
-def btn_click(item):
-    global expression
-    try:
-        input_field['state'] = "normal"
-        expression += item
-        input_field.insert(END, item)
+class Main(Frame):
+    def __init__(self, root):
+        super(Main, self).__init__(root)
+        self.build()
 
-        if item == '=':
-            result = str(eval(expression[:-1]))
-            input_field.insert(END, result)
-            expression = ""
+    def build(self):
+        self.formula = "0"
+        self.lbl = Label(text=self.formula, font=("Times New Roman", 21, "bold"), bg="#000", foreground="#FFF")
+        self.lbl.place(x=11, y=50)
 
-        input_field['state'] = "readonly"
-    except ZeroDivisionError:
-        input_field.delete(0, END)
-        input_field.insert(0, 'Ошибка (деление на 0)')
-    except SyntaxError:
-        input_field.delete(0, END)
-        input_field.insert(0, 'Ошибка')
+        btns = [
+            "C", "DEL", "*", "=",
+            "1", "2", "3", "/",
+            "4", "5", "6", "+",
+            "7", "8", "9", "-",
+            "(", "0", ")", "X^2"
+        ]
+
+        x = 10
+        y = 140
+        for bt in btns:
+            com = lambda x=bt: self.logicalc(x)
+            Button(text=bt, bg="#FFF",
+                   font=("Times New Roman", 15),
+                   command=com).place(x=x, y=y,
+                                      width=115,
+                                      height=79)
+            x += 117
+            if x > 400:
+                x = 10
+                y += 81
+
+    def logicalc(self, operation):
+        if operation == "C":
+            self.formula = ""
+        elif operation == "DEL":
+            self.formula = self.formula[0:-1]
+        elif operation == "X^2":
+            self.formula = str((eval(self.formula))**2)
+        elif operation == "=":
+            self.formula = str(eval(self.formula))
+        else:
+            if self.formula == "0":
+                self.formula = ""
+            self.formula += operation
+        self.update()
+
+    def update(self):
+        if self.formula == "":
+            self.formula = "0"
+        self.lbl.configure(text=self.formula)
 
 
-def bt_clear():
-    global expression
-    expression = ""
-    input_field['state'] = "normal"
-    input_field.delete(0, END)
-    input_field['state'] = "readonly"
-
-
-root = Tk()
-root.geometry("250x320")
-root.title("Калькулятор")
-root.resizable(0, 0)
-
-frame_input = Frame(root)
-frame_input.grid(row=0, column=0, columnspan=4, sticky="nsew")
-
-input_field = Entry(frame_input, font='Arial 15 bold', width=24, state="readonly")
-input_field.pack(fill=BOTH)
-
-buttons = (('7', '8', '9', '/', '4'),
-           ('4', '5', '6', '*', '4'),
-           ('1', '2', '3', '-', '4'),
-           ('0', '.', '=', '+', '4')
-           )
-
-expression = ""
-
-button = Button(root, text='C', command=lambda: bt_clear())
-button.grid(row=1, column=3, sticky="nsew")
-
-for row in range(4):
-    for col in range(4):
-        Button(root, width=2, height=3, text=buttons[row][col],
-               command=lambda row=row, col=col: btn_click(buttons[row][col])).grid(row=row + 2, column=col, sticky="nsew", padx=1, pady=1)
-
-root.mainloop()
+if __name__ == '__main__':
+    root = Tk()
+    root["bg"] = "#000"
+    root.geometry("485x550+200+200")
+    root.title("Калькулятор")
+    root.resizable(False, False)
+    app = Main(root)
+    app.pack()
+    root.mainloop()
